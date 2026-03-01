@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Receipt, CheckCircle2, Clock, CreditCard } from "lucide-react";
+import { Receipt, CheckCircle2, Clock, CreditCard, Printer } from "lucide-react";
 import { mockTransactions } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
+import ReceiptDialog from "@/components/ReceiptDialog";
 
 const TransactionsPage = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<any>(null);
 
   const filtered =
     filterStatus === "all"
@@ -16,6 +19,18 @@ const TransactionsPage = () => {
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
 
   const totalPaid = mockTransactions.filter(t => t.status === "paid").reduce((a, b) => a + b.amount, 0);
+
+  const handlePrint = (tx: typeof mockTransactions[0]) => {
+    setSelectedTx({
+      id: tx.id,
+      customer: tx.customer,
+      service: tx.service,
+      amount: tx.amount,
+      method: tx.method,
+      date: tx.date,
+    });
+    setReceiptOpen(true);
+  };
 
   return (
     <div className="page-container">
@@ -77,25 +92,37 @@ const TransactionsPage = () => {
                   <CreditCard className="w-3 h-3 text-muted-foreground" />
                   <span className="text-[11px] text-muted-foreground">{tx.method}</span>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] font-semibold border ${
-                    tx.status === "paid"
-                      ? "bg-success/15 text-success border-success/30"
-                      : "bg-warning/15 text-warning border-warning/30"
-                  }`}
-                >
-                  {tx.status === "paid" ? (
-                    <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Lunas</span>
-                  ) : (
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Belum Lunas</span>
+                <div className="flex items-center gap-2">
+                  {tx.status === "paid" && (
+                    <button
+                      onClick={() => handlePrint(tx)}
+                      className="p-1.5 rounded-lg bg-primary/10 text-primary"
+                    >
+                      <Printer className="w-3 h-3" />
+                    </button>
                   )}
-                </Badge>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] font-semibold border ${
+                      tx.status === "paid"
+                        ? "bg-success/15 text-success border-success/30"
+                        : "bg-warning/15 text-warning border-warning/30"
+                    }`}
+                  >
+                    {tx.status === "paid" ? (
+                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Lunas</span>
+                    ) : (
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Belum Lunas</span>
+                    )}
+                  </Badge>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.div>
+
+      <ReceiptDialog open={receiptOpen} onOpenChange={setReceiptOpen} data={selectedTx} />
     </div>
   );
 };
