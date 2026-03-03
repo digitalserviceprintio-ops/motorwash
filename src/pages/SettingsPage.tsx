@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Settings, Store, Clock, MapPin, Phone, Shield, ChevronRight, Droplets, LogOut, Percent, DollarSign } from "lucide-react";
+import { Settings, Store, Clock, MapPin, Phone, Shield, ChevronRight, Droplets, LogOut, Percent, DollarSign, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,6 +137,22 @@ const SettingsPage = () => {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">Paket Layanan</p>
               <p className="text-xs text-muted-foreground">Kelola paket cuci motor</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate("/pengaturan/printer")}
+            className="w-full flex items-center gap-3 bg-card rounded-xl p-3.5 border border-border/50 shadow-sm text-left"
+          >
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Printer className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">Pengaturan Printer</p>
+              <p className="text-xs text-muted-foreground">Atur koneksi & pairing printer</p>
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
           </motion.button>
