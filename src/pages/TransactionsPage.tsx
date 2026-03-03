@@ -1,26 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Receipt, CheckCircle2, Clock, CreditCard, Printer } from "lucide-react";
-import { mockTransactions } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
 import ReceiptDialog from "@/components/ReceiptDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+const db = supabase as any;
 
 const TransactionsPage = () => {
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any>(null);
+  const [businessSettings, setBusinessSettings] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadTransactions();
+      loadBusinessSettings();
+    }
+  }, [user]);
+
+  const loadTransactions = async () => {
+    if (!user) return;
+    const { data } = await db.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    if (data) setTransactions(data);
+  };
+
+  const loadBusinessSettings = async () => {
+    if (!user) return;
+    const { data } = await db.from("business_settings").select("*").eq("user_id", user.id).maybeSingle();
+    if (data) setBusinessSettings(data);
+  };
 
   const filtered =
     filterStatus === "all"
-      ? mockTransactions
-      : mockTransactions.filter((t) => t.status === filterStatus);
+      ? transactions
+      : transactions.filter((t: any) => t.status === filterStatus);
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
 
-  const totalPaid = mockTransactions.filter(t => t.status === "paid").reduce((a, b) => a + b.amount, 0);
+  const totalPaid = transactions.filter((t: any) => t.status === "paid").reduce((a: number, b: any) => a + b.amount, 0);
 
-  const handlePrint = (tx: typeof mockTransactions[0]) => {
+  const handlePrint = (tx: any) => {
     setSelectedTx({
       id: tx.id,
       customer: tx.customer,
@@ -28,6 +53,9 @@ const TransactionsPage = () => {
       amount: tx.amount,
       method: tx.method,
       date: tx.date,
+      businessName: businessSettings?.business_name || "CuciKu Motor Wash",
+      address: businessSettings?.address || "Jl. Merdeka No. 123, Jakarta",
+      phone: businessSettings?.phone || "0812-3456-7890",
     });
     setReceiptOpen(true);
   };
@@ -40,16 +68,14 @@ const TransactionsPage = () => {
           <h1 className="text-xl font-bold text-foreground">Transaksi</h1>
         </div>
 
-        {/* Summary */}
         <div className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm mb-4">
           <p className="text-xs text-muted-foreground mb-1">Total Pendapatan Hari Ini</p>
           <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
           <p className="text-xs text-success font-medium mt-1">
-            {mockTransactions.filter(t => t.status === "paid").length} transaksi lunas
+            {transactions.filter((t: any) => t.status === "paid").length} transaksi lunas
           </p>
         </div>
 
-        {/* Filters */}
         <div className="flex gap-2 mb-4">
           {[
             { key: "all", label: "Semua" },
@@ -70,9 +96,8 @@ const TransactionsPage = () => {
           ))}
         </div>
 
-        {/* Transaction List */}
         <div className="space-y-3">
-          {filtered.map((tx, i) => (
+          {filtered.map((tx: any, i: number) => (
             <motion.div
               key={tx.id}
               initial={{ opacity: 0, y: 10 }}
@@ -119,6 +144,9 @@ const TransactionsPage = () => {
               </div>
             </motion.div>
           ))}
+          {filtered.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground text-sm">Tidak ada transaksi</div>
+          )}
         </div>
       </motion.div>
 
