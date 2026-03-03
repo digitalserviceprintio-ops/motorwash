@@ -12,6 +12,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ServicesPage from "./pages/ServicesPage";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PrinterSettingsPage from "./pages/PrinterSettingsPage";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 
@@ -40,6 +41,7 @@ const AppRoutes = () => {
         <Route path="/laporan" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
         <Route path="/pengaturan" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/layanan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+        <Route path="/pengaturan/printer" element={<ProtectedRoute><PrinterSettingsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <BottomNav />}

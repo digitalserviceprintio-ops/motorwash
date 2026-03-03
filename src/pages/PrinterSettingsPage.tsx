@@ -1,0 +1,207 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+
+interface PrinterDevice {
+  id: string;
+  name: string;
+  type: "bluetooth" | "wifi" | "usb";
+  connected: boolean;
+}
+
+const PrinterSettingsPage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [scanning, setScanning] = useState(false);
+  const [printers, setPrinters] = useState<PrinterDevice[]>([]);
+  const [connectedPrinter, setConnectedPrinter] = useState<string | null>(
+    localStorage.getItem("cuciku_printer") || null
+  );
+  const [paperSize, setPaperSize] = useState(localStorage.getItem("cuciku_paper_size") || "58mm");
+  const [autoPrint, setAutoPrint] = useState(localStorage.getItem("cuciku_auto_print") === "true");
+
+  const handleScan = () => {
+    setScanning(true);
+    // Simulate scanning for nearby printers
+    setTimeout(() => {
+      setPrinters([
+        { id: "bt-1", name: "Thermal Printer BT-58", type: "bluetooth", connected: false },
+        { id: "wifi-1", name: "Epson TM-T82X (Wi-Fi)", type: "wifi", connected: false },
+        { id: "usb-1", name: "USB POS Printer", type: "usb", connected: false },
+      ]);
+      setScanning(false);
+    }, 2000);
+  };
+
+  const handleConnect = (printer: PrinterDevice) => {
+    setConnectedPrinter(printer.id);
+    localStorage.setItem("cuciku_printer", printer.id);
+    localStorage.setItem("cuciku_printer_name", printer.name);
+    toast({ title: "Printer terhubung", description: `Berhasil terhubung ke ${printer.name}` });
+  };
+
+  const handleDisconnect = () => {
+    setConnectedPrinter(null);
+    localStorage.removeItem("cuciku_printer");
+    localStorage.removeItem("cuciku_printer_name");
+    toast({ title: "Printer terputus" });
+  };
+
+  const handlePaperSize = (size: string) => {
+    setPaperSize(size);
+    localStorage.setItem("cuciku_paper_size", size);
+    toast({ title: `Ukuran kertas: ${size}` });
+  };
+
+  const handleAutoPrint = () => {
+    const newVal = !autoPrint;
+    setAutoPrint(newVal);
+    localStorage.setItem("cuciku_auto_print", String(newVal));
+  };
+
+  const handleTestPrint = () => {
+    window.print();
+    toast({ title: "Test print dikirim" });
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "bluetooth": return Bluetooth;
+      case "wifi": return Wifi;
+      default: return Usb;
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => navigate("/pengaturan")} className="w-8 h-8 rounded-xl bg-card border border-border/50 flex items-center justify-center">
+            <ChevronLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div className="flex items-center gap-2">
+            <Printer className="w-5 h-5 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">Pengaturan Printer</h1>
+          </div>
+        </div>
+
+        {/* Connected Printer */}
+        {connectedPrinter && (
+          <div className="bg-success/10 border border-success/30 rounded-2xl p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-success" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {localStorage.getItem("cuciku_printer_name") || "Printer"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Terhubung</p>
+                </div>
+              </div>
+              <button onClick={handleDisconnect} className="text-xs text-destructive font-medium px-3 py-1.5 rounded-lg bg-destructive/10">
+                Putuskan
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Scan Button */}
+        <button
+          onClick={handleScan}
+          disabled={scanning}
+          className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 rounded-xl text-sm mb-4"
+        >
+          <RefreshCw className={`w-4 h-4 ${scanning ? "animate-spin" : ""}`} />
+          {scanning ? "Mencari printer..." : "Cari Printer"}
+        </button>
+
+        {/* Found Printers */}
+        {printers.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">Printer Ditemukan</p>
+            <div className="space-y-2">
+              {printers.map((printer, i) => {
+                const Icon = getTypeIcon(printer.type);
+                const isConnected = connectedPrinter === printer.id;
+                return (
+                  <motion.div
+                    key={printer.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-3 bg-card rounded-xl p-3.5 border border-border/50 shadow-sm"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{printer.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{printer.type}</p>
+                    </div>
+                    <button
+                      onClick={() => isConnected ? handleDisconnect() : handleConnect(printer)}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+                        isConnected ? "bg-success/10 text-success" : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {isConnected ? "Terhubung" : "Hubungkan"}
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Paper Size */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">Ukuran Kertas</p>
+          <div className="flex gap-2">
+            {["58mm", "80mm", "A4"].map((size) => (
+              <button
+                key={size}
+                onClick={() => handlePaperSize(size)}
+                className={`flex-1 text-sm font-medium py-2.5 rounded-xl transition-colors ${
+                  paperSize === size
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-muted-foreground border border-border/50"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Auto Print */}
+        <div className="bg-card rounded-xl p-3.5 border border-border/50 shadow-sm mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Auto Print</p>
+              <p className="text-xs text-muted-foreground">Cetak struk otomatis saat transaksi selesai</p>
+            </div>
+            <button
+              onClick={handleAutoPrint}
+              className={`w-11 h-6 rounded-full transition-colors relative ${autoPrint ? "bg-primary" : "bg-muted"}`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${autoPrint ? "translate-x-5" : "translate-x-0.5"}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Test Print */}
+        <button
+          onClick={handleTestPrint}
+          className="w-full flex items-center justify-center gap-2 bg-card text-foreground font-semibold py-3 rounded-xl text-sm border border-border/50"
+        >
+          <Printer className="w-4 h-4" />
+          Test Print
+        </button>
+      </motion.div>
+    </div>
+  );
+};
+
+export default PrinterSettingsPage;

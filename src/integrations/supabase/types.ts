@@ -14,16 +14,237 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      business_settings: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          created_at: string | null
+          id: string
+          operating_hours: string | null
+          phone: string | null
+          service_charge: number | null
+          tax_rate: number | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          id?: string
+          operating_hours?: string | null
+          phone?: string | null
+          service_charge?: number | null
+          tax_rate?: number | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          id?: string
+          operating_hours?: string | null
+          phone?: string | null
+          service_charge?: number | null
+          tax_rate?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      promos: {
+        Row: {
+          active: boolean | null
+          code: string
+          created_at: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          usage_count: number | null
+          usage_limit: number | null
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          code: string
+          created_at?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string
+          created_at?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      queues: {
+        Row: {
+          created_at: string | null
+          estimated_time: string | null
+          id: string
+          name: string
+          phone: string | null
+          plate: string | null
+          service: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          estimated_time?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          plate?: string | null
+          service: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          estimated_time?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          plate?: string | null
+          service?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          duration: string
+          id: string
+          name: string
+          price: number
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          duration?: string
+          id?: string
+          name: string
+          price?: number
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          duration?: string
+          id?: string
+          name?: string
+          price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          customer: string
+          date: string | null
+          id: string
+          method: string | null
+          service: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          customer: string
+          date?: string | null
+          id?: string
+          method?: string | null
+          service: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          customer?: string
+          date?: string | null
+          id?: string
+          method?: string | null
+          service?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +371,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
