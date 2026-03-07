@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Receipt, Wallet, ListOrdered, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Receipt, Wallet, ListOrdered, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, Plus, ShoppingCart, Droplets } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import StatCard from "@/components/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureBusinessSettings } from "@/lib/supabase-helpers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const db = supabase as any;
 
@@ -22,7 +24,9 @@ const promoSlides = [
 const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [businessName, setBusinessName] = useState("CuciKu Motor Wash");
   const [stats, setStats] = useState({ txCount: 0, revenue: 0, activeQueue: 0, doneToday: 0, waitingQueue: 0 });
   const [recentQueue, setRecentQueue] = useState<any[]>([]);
   const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([]);
@@ -41,8 +45,15 @@ const Dashboard = () => {
     if (user) {
       loadDashboardData();
       loadServices();
+      loadBusinessName();
     }
   }, [user]);
+
+  const loadBusinessName = async () => {
+    if (!user) return;
+    const data = await ensureBusinessSettings(user.id);
+    if (data?.business_name) setBusinessName(data.business_name);
+  };
 
   const loadServices = async () => {
     if (!user) return;
@@ -133,9 +144,12 @@ const Dashboard = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
         <div>
           <p className="text-sm text-muted-foreground">Selamat datang 👋</p>
-          <h1 className="text-xl font-bold text-foreground">Admin CuciKu</h1>
+          <h1 className="text-xl font-bold text-foreground">{businessName}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/pembelian")} className="flex items-center gap-1.5 bg-card text-foreground text-xs font-semibold px-3 py-2 rounded-xl border border-border/50">
+            <ShoppingCart className="w-4 h-4" />
+          </button>
           <button onClick={() => setQuickTxOpen(true)} className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-semibold px-3 py-2 rounded-xl">
             <Plus className="w-4 h-4" /> Transaksi
           </button>
@@ -194,6 +208,25 @@ const Dashboard = () => {
           </BarChart>
         </ResponsiveContainer>
       </motion.div>
+
+      {/* Services */}
+      {services.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="section-title text-sm flex items-center gap-2"><Droplets className="w-4 h-4 text-primary" />Paket Layanan</h2>
+            <button onClick={() => navigate("/layanan")} className="text-xs text-primary font-medium">Kelola</button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {services.slice(0, 5).map((s: any) => (
+              <div key={s.id} className="min-w-[120px] bg-card rounded-xl p-3 border border-border/50 text-center shrink-0">
+                <p className="text-xs font-semibold text-foreground truncate">{s.name}</p>
+                <p className="text-sm font-bold text-primary mt-1">Rp {s.price.toLocaleString("id-ID")}</p>
+                <p className="text-[10px] text-muted-foreground">{s.duration}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Recent Queue */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
