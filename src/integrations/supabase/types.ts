@@ -143,6 +143,48 @@ export type Database = {
         }
         Relationships: []
       }
+      purchases: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_name: string
+          notes: string | null
+          purchase_date: string
+          quantity: number
+          supplier: string | null
+          total_price: number
+          unit: string
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_name: string
+          notes?: string | null
+          purchase_date?: string
+          quantity?: number
+          supplier?: string | null
+          total_price?: number
+          unit?: string
+          unit_price?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_name?: string
+          notes?: string | null
+          purchase_date?: string
+          quantity?: number
+          supplier?: string | null
+          total_price?: number
+          unit?: string
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       queues: {
         Row: {
           created_at: string | null
