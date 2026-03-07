@@ -9,7 +9,7 @@ interface PrinterDevice {
   name: string;
   type: "bluetooth" | "wifi" | "usb";
   connected: boolean;
-  device?: BluetoothDevice;
+  device?: any;
 }
 
 const PrinterSettingsPage = () => {
@@ -22,7 +22,7 @@ const PrinterSettingsPage = () => {
   );
   const [paperSize, setPaperSize] = useState(localStorage.getItem("cuciku_paper_size") || "58mm");
   const [autoPrint, setAutoPrint] = useState(localStorage.getItem("cuciku_auto_print") === "true");
-  const [btSupported] = useState(() => typeof navigator !== "undefined" && "bluetooth" in navigator);
+  const [btSupported] = useState(() => typeof navigator !== "undefined" && "bluetooth" in (navigator as any));
 
   const handleBluetoothScan = async () => {
     if (!btSupported) {
@@ -31,7 +31,7 @@ const PrinterSettingsPage = () => {
     }
     setScanning(true);
     try {
-      const device = await navigator.bluetooth.requestDevice({
+      const device = await (navigator as any).bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: ["battery_service"],
       });
