@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      licenses: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          license_key: string | null
+          trial_end: string | null
+          trial_start: string | null
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_key?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_key?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
