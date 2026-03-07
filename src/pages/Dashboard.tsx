@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Receipt, Wallet, ListOrdered, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Receipt, Wallet, ListOrdered, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, Plus, ShoppingCart, Droplets } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import StatCard from "@/components/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureBusinessSettings } from "@/lib/supabase-helpers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const db = supabase as any;
 
@@ -22,7 +24,9 @@ const promoSlides = [
 const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [businessName, setBusinessName] = useState("CuciKu Motor Wash");
   const [stats, setStats] = useState({ txCount: 0, revenue: 0, activeQueue: 0, doneToday: 0, waitingQueue: 0 });
   const [recentQueue, setRecentQueue] = useState<any[]>([]);
   const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([]);
@@ -41,8 +45,15 @@ const Dashboard = () => {
     if (user) {
       loadDashboardData();
       loadServices();
+      loadBusinessName();
     }
   }, [user]);
+
+  const loadBusinessName = async () => {
+    if (!user) return;
+    const data = await ensureBusinessSettings(user.id);
+    if (data?.business_name) setBusinessName(data.business_name);
+  };
 
   const loadServices = async () => {
     if (!user) return;
