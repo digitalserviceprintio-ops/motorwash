@@ -209,6 +209,25 @@ const Dashboard = () => {
         </ResponsiveContainer>
       </motion.div>
 
+      {/* Services */}
+      {services.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="section-title text-sm flex items-center gap-2"><Droplets className="w-4 h-4 text-primary" />Paket Layanan</h2>
+            <button onClick={() => navigate("/layanan")} className="text-xs text-primary font-medium">Kelola</button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {services.slice(0, 5).map((s: any) => (
+              <div key={s.id} className="min-w-[120px] bg-card rounded-xl p-3 border border-border/50 text-center shrink-0">
+                <p className="text-xs font-semibold text-foreground truncate">{s.name}</p>
+                <p className="text-sm font-bold text-primary mt-1">Rp {s.price.toLocaleString("id-ID")}</p>
+                <p className="text-[10px] text-muted-foreground">{s.duration}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Recent Queue */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
         <h2 className="section-title text-sm mb-3">Antrian Terbaru</h2>
