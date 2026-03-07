@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone } from "lucide-react";
+import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,17 +23,18 @@ const PrinterSettingsPage = () => {
   const [paperSize, setPaperSize] = useState(localStorage.getItem("cuciku_paper_size") || "58mm");
   const [autoPrint, setAutoPrint] = useState(localStorage.getItem("cuciku_auto_print") === "true");
   const [btSupported] = useState(() => typeof navigator !== "undefined" && "bluetooth" in (navigator as any));
+  const [testPrinting, setTestPrinting] = useState(false);
 
   const handleBluetoothScan = async () => {
     if (!btSupported) {
-      toast({ title: "Bluetooth tidak didukung", description: "Browser ini tidak mendukung Web Bluetooth API. Gunakan Chrome di Android atau desktop.", variant: "destructive" });
+      toast({ title: "Bluetooth tidak didukung", description: "Gunakan Chrome di Android atau desktop.", variant: "destructive" });
       return;
     }
     setScanning(true);
     try {
       const device = await (navigator as any).bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ["battery_service"],
+        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb", "e7810a71-73ae-499d-8c15-faa9aef0c3f2"],
       });
       if (device) {
         const newPrinter: PrinterDevice = {
@@ -100,7 +101,81 @@ const PrinterSettingsPage = () => {
 
   const handlePaperSize = (size: string) => { setPaperSize(size); localStorage.setItem("cuciku_paper_size", size); };
   const handleAutoPrint = () => { const v = !autoPrint; setAutoPrint(v); localStorage.setItem("cuciku_auto_print", String(v)); };
-  const handleTestPrint = () => { window.print(); toast({ title: "Test print dikirim" }); };
+
+  const handleTestPrint = () => {
+    const printerType = localStorage.getItem("cuciku_printer_type");
+    if (printerType === "bluetooth") {
+      handleBluetoothTestPrint();
+    } else {
+      window.print();
+      toast({ title: "Test print dikirim" });
+    }
+  };
+
+  const handleBluetoothTestPrint = async () => {
+    if (!btSupported) {
+      toast({ title: "Bluetooth tidak didukung", variant: "destructive" });
+      return;
+    }
+    setTestPrinting(true);
+    try {
+      const device = await (navigator as any).bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb", "e7810a71-73ae-499d-8c15-faa9aef0c3f2"],
+      });
+      const server = await device.gatt?.connect();
+      if (!server) { setTestPrinting(false); return; }
+
+      const serviceUUIDs = ["000018f0-0000-1000-8000-00805f9b34fb", "e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
+      let characteristic: any = null;
+
+      for (const uuid of serviceUUIDs) {
+        try {
+          const service = await server.getPrimaryService(uuid);
+          const chars = await service.getCharacteristics();
+          characteristic = chars.find((c: any) => c.properties.write || c.properties.writeWithoutResponse);
+          if (characteristic) break;
+        } catch { /* next */ }
+      }
+
+      if (!characteristic) {
+        toast({ title: "Gagal menemukan karakteristik printer", variant: "destructive" });
+        server.disconnect();
+        setTestPrinting(false);
+        return;
+      }
+
+      const encoder = new TextEncoder();
+      const now = new Date().toLocaleString("id-ID");
+      const text = [
+        "\x1B\x40",
+        "\x1B\x61\x01",
+        "================================\n",
+        "     TEST PRINT - CuciKu\n",
+        "================================\n",
+        "\x1B\x61\x00",
+        `Waktu: ${now}\n`,
+        `Kertas: ${paperSize}\n`,
+        `Printer: ${device.name || "BT Printer"}\n`,
+        "--------------------------------\n",
+        "\x1B\x61\x01",
+        "Printer terhubung dengan baik!\n",
+        "================================\n",
+        "\n\n\n\x1D\x56\x00",
+      ].join("");
+
+      const bytes = encoder.encode(text);
+      for (let i = 0; i < bytes.length; i += 20) {
+        await characteristic.writeValue(bytes.slice(i, i + 20));
+      }
+
+      server.disconnect();
+      toast({ title: "Test print Bluetooth berhasil!", description: `Dikirim ke ${device.name}` });
+    } catch (err: any) {
+      toast({ title: "Gagal test print", description: err.message, variant: "destructive" });
+    }
+    setTestPrinting(false);
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -149,7 +224,7 @@ const PrinterSettingsPage = () => {
           {!btSupported && (
             <div className="flex items-start gap-2 bg-warning/10 border border-warning/30 rounded-xl p-3">
               <Smartphone className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground">Web Bluetooth tidak tersedia di browser ini. Gunakan <strong>Chrome</strong> di Android atau desktop untuk koneksi Bluetooth.</p>
+              <p className="text-xs text-muted-foreground">Web Bluetooth tidak tersedia. Gunakan <strong>Chrome</strong> di Android atau desktop.</p>
             </div>
           )}
           <button onClick={handleSimulatedScan} disabled={scanning}
@@ -212,10 +287,21 @@ const PrinterSettingsPage = () => {
           </div>
         </div>
 
-        {/* Test Print */}
-        <button onClick={handleTestPrint} className="w-full flex items-center justify-center gap-2 bg-card text-foreground font-semibold py-3 rounded-xl text-sm border border-border/50">
-          <Printer className="w-4 h-4" /> Test Print
-        </button>
+        {/* Test Print Buttons */}
+        <div className="space-y-2">
+          <button onClick={handleTestPrint} disabled={testPrinting}
+            className="w-full flex items-center justify-center gap-2 bg-card text-foreground font-semibold py-3 rounded-xl text-sm border border-border/50">
+            <Printer className="w-4 h-4" /> {testPrinting ? "Mengirim..." : "Test Print"}
+          </button>
+          {btSupported && (
+            <button onClick={handleBluetoothTestPrint} disabled={testPrinting}
+              className="w-full flex items-center justify-center gap-2 bg-primary/10 text-primary font-semibold py-3 rounded-xl text-sm border border-primary/30">
+              <Bluetooth className={`w-4 h-4 ${testPrinting ? "animate-pulse" : ""}`} />
+              <FileText className="w-4 h-4" />
+              {testPrinting ? "Mengirim ke Bluetooth..." : "Test Print Bluetooth"}
+            </button>
+          )}
+        </div>
       </motion.div>
     </div>
   );
