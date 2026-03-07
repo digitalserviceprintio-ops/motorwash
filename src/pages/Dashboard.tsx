@@ -144,9 +144,12 @@ const Dashboard = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
         <div>
           <p className="text-sm text-muted-foreground">Selamat datang 👋</p>
-          <h1 className="text-xl font-bold text-foreground">Admin CuciKu</h1>
+          <h1 className="text-xl font-bold text-foreground">{businessName}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/pembelian")} className="flex items-center gap-1.5 bg-card text-foreground text-xs font-semibold px-3 py-2 rounded-xl border border-border/50">
+            <ShoppingCart className="w-4 h-4" />
+          </button>
           <button onClick={() => setQuickTxOpen(true)} className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-semibold px-3 py-2 rounded-xl">
             <Plus className="w-4 h-4" /> Transaksi
           </button>
