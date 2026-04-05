@@ -35,6 +35,7 @@ const Dashboard = () => {
   const [qtxCustomer, setQtxCustomer] = useState("");
   const [qtxService, setQtxService] = useState("");
   const [qtxMethod, setQtxMethod] = useState("Cash");
+  const [qtxQueueNumber, setQtxQueueNumber] = useState("");
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % promoSlides.length), 4000);

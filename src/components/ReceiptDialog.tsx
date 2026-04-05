@@ -16,6 +16,7 @@ interface ReceiptData {
   businessName?: string;
   address?: string;
   phone?: string;
+  queueNumber?: string;
 }
 
 interface ReceiptDialogProps {
