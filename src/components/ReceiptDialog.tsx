@@ -135,6 +135,7 @@ const ReceiptDialog = ({ open, onOpenChange, data }: ReceiptDialogProps) => {
         "================================\n",
         "\x1B\x61\x00", // Left align
         `No: ${data.id.slice(0, 8).toUpperCase()}\n`,
+        ...(data.queueNumber ? [`No. Antrian: ${data.queueNumber}\n`] : []),
         `Tgl: ${data.date}\n`,
         "--------------------------------\n",
         `Pelanggan: ${data.customer}\n`,
