@@ -209,6 +209,9 @@ const ReceiptDialog = ({ open, onOpenChange, data }: ReceiptDialogProps) => {
           </div>
           <div className="divider border-t border-dashed border-border my-2" />
           <div className="row flex justify-between"><span>No. Transaksi</span><span>{data.id.slice(0, 8).toUpperCase()}</span></div>
+          {data.queueNumber && (
+            <div className="row flex justify-between font-bold"><span>No. Antrian</span><span className="text-primary">{data.queueNumber}</span></div>
+          )}
           <div className="row flex justify-between"><span>Tanggal</span><span>{data.date}</span></div>
           <div className="divider border-t border-dashed border-border my-2" />
           <div className="row flex justify-between"><span>Pelanggan</span><span>{data.customer}</span></div>
