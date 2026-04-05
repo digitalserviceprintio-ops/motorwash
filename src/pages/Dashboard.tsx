@@ -108,6 +108,19 @@ const Dashboard = () => {
     setWeeklyRevenue(weekData);
   };
 
+  const generateQueueNumber = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().split("T")[0];
+    const { count } = await db.from("transactions").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("date", today);
+    const num = (count || 0) + 1;
+    const queueNum = `A${String(num).padStart(3, "0")}`;
+    setQtxQueueNumber(queueNum);
+  };
+
+  useEffect(() => {
+    if (quickTxOpen && user) generateQueueNumber();
+  }, [quickTxOpen, user]);
+
   const handleQuickTx = async () => {
     if (!qtxCustomer || !qtxService || !user) return;
     const service = services.find((s: any) => s.id === qtxService);
@@ -124,8 +137,8 @@ const Dashboard = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Transaksi berhasil!", description: `${qtxCustomer} - ${service.name}` });
-    setQtxCustomer(""); setQtxService(""); setQtxMethod("Cash");
+    toast({ title: "Transaksi berhasil!", description: `${qtxCustomer} - ${service.name} (${qtxQueueNumber})` });
+    setQtxCustomer(""); setQtxService(""); setQtxMethod("Cash"); setQtxQueueNumber("");
     setQuickTxOpen(false);
     loadDashboardData();
   };
@@ -257,6 +270,10 @@ const Dashboard = () => {
             <DialogTitle>Transaksi Cepat</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
+            <div className="bg-primary/10 rounded-xl p-3 flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Nomor Antrian</span>
+              <span className="text-lg font-bold text-primary">{qtxQueueNumber || "..."}</span>
+            </div>
             <div>
               <Label className="text-xs">Nama Pelanggan</Label>
               <Input placeholder="Masukkan nama" value={qtxCustomer} onChange={(e) => setQtxCustomer(e.target.value)} />
