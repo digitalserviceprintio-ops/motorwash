@@ -77,25 +77,36 @@ const TransactionsPage = () => {
           </p>
         </div>
 
-        <div className="flex gap-2 mb-4">
-          {[
-            { key: "all", label: "Semua" },
-            { key: "paid", label: "Lunas" },
-            { key: "unpaid", label: "Belum Lunas" },
-          ].map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilterStatus(f.key)}
-              className={`text-xs font-medium px-4 py-2 rounded-full transition-colors ${
-                filterStatus === f.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground border border-border/50"
-              }`}
-            >
-              {f.label}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl bg-card border border-border/50 shadow-sm text-foreground hover:bg-accent transition-colors">
+              <ListFilter className="w-4 h-4 text-primary" />
+              <span>{filterStatus === "all" ? "Semua" : filterStatus === "paid" ? "Lunas" : "Belum Lunas"}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
-          ))}
-        </div>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-48 p-1.5 rounded-xl shadow-lg border border-border/50">
+            {[
+              { key: "all", label: "Semua", icon: Filter },
+              { key: "paid", label: "Lunas", icon: CheckCircle2 },
+              { key: "unpaid", label: "Belum Lunas", icon: Clock },
+            ].map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFilterStatus(f.key)}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  filterStatus === f.key
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-accent"
+                }`}
+              >
+                <f.icon className="w-4 h-4" />
+                <span className="flex-1 text-left">{f.label}</span>
+                {filterStatus === f.key && <Check className="w-4 h-4 text-primary" />}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
 
         <div className="space-y-3">
           {filtered.map((tx: any, i: number) => (
