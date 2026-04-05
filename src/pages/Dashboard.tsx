@@ -190,28 +190,9 @@ const Dashboard = () => {
         <StatCard icon={CheckCircle2} label="Motor Selesai" value={String(stats.doneToday)} subtitle="Hari ini" />
       </div>
 
-      {/* Revenue Chart */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <h2 className="section-title text-sm">Pendapatan Mingguan</h2>
-          </div>
-          <span className="text-xs text-muted-foreground">Minggu ini</span>
-        </div>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={weeklyRevenue}>
-            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }} />
-            <YAxis hide />
-            <Tooltip formatter={(value: number) => [formatCurrency(value), "Pendapatan"]} contentStyle={{ borderRadius: 12, border: "1px solid hsl(214 32% 91%)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: 12 }} />
-            <Bar dataKey="revenue" fill="hsl(217 91% 60%)" radius={[6, 6, 0, 0]} barSize={28} />
-          </BarChart>
-        </ResponsiveContainer>
-      </motion.div>
-
       {/* Services */}
       {services.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="section-title text-sm flex items-center gap-2"><Droplets className="w-4 h-4 text-primary" />Paket Layanan</h2>
             <button onClick={() => navigate("/layanan")} className="text-xs text-primary font-medium">Kelola</button>
@@ -229,7 +210,7 @@ const Dashboard = () => {
       )}
 
       {/* Recent Queue */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-6">
         <h2 className="section-title text-sm mb-3">Antrian Terbaru</h2>
         <div className="space-y-2">
           {recentQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Belum ada antrian</p>}
@@ -247,6 +228,25 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Revenue Chart */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h2 className="section-title text-sm">Pendapatan Mingguan</h2>
+          </div>
+          <span className="text-xs text-muted-foreground">Minggu ini</span>
+        </div>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={weeklyRevenue}>
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }} />
+            <YAxis hide />
+            <Tooltip formatter={(value: number) => [formatCurrency(value), "Pendapatan"]} contentStyle={{ borderRadius: 12, border: "1px solid hsl(214 32% 91%)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: 12 }} />
+            <Bar dataKey="revenue" fill="hsl(217 91% 60%)" radius={[6, 6, 0, 0]} barSize={28} />
+          </BarChart>
+        </ResponsiveContainer>
       </motion.div>
 
       {/* Quick Transaction Dialog */}
