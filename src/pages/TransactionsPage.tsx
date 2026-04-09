@@ -54,6 +54,7 @@ const TransactionsPage = () => {
       amount: tx.amount,
       method: tx.method,
       date: tx.date,
+      queueNumber: tx.queue_number || "",
       businessName: businessSettings?.business_name || "CuciKu Motor Wash",
       address: businessSettings?.address || "Jl. Merdeka No. 123, Jakarta",
       phone: businessSettings?.phone || "0812-3456-7890",

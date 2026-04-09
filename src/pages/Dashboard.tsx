@@ -111,7 +111,7 @@ const Dashboard = () => {
   const generateQueueNumber = async () => {
     if (!user) return;
     const today = new Date().toISOString().split("T")[0];
-    const { count } = await db.from("transactions").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("date", today);
+    const { count } = await db.from("queues").select("*", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", today);
     const num = (count || 0) + 1;
     const queueNum = `A${String(num).padStart(3, "0")}`;
     setQtxQueueNumber(queueNum);
@@ -125,6 +125,21 @@ const Dashboard = () => {
     if (!qtxCustomer || !qtxService || !user) return;
     const service = services.find((s: any) => s.id === qtxService);
     if (!service) return;
+
+    // 1. Create queue entry
+    const { error: queueError } = await db.from("queues").insert({
+      user_id: user.id,
+      name: qtxCustomer,
+      service: service.name,
+      status: "waiting",
+      estimated_time: service.duration || "20 menit",
+    });
+    if (queueError) {
+      toast({ title: "Error", description: queueError.message, variant: "destructive" });
+      return;
+    }
+
+    // 2. Create transaction with queue_number
     const { error } = await db.from("transactions").insert({
       user_id: user.id,
       customer: qtxCustomer,
@@ -132,6 +147,7 @@ const Dashboard = () => {
       amount: service.price,
       method: qtxMethod,
       status: "paid",
+      queue_number: qtxQueueNumber,
     });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
