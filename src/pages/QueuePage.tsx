@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ListOrdered, Plus } from "lucide-react";
+import { ListOrdered, Plus, Search } from "lucide-react";
 import QueueCard, { QueueItem } from "@/components/QueueCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ const QueuePage = () => {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
@@ -107,7 +108,18 @@ const QueuePage = () => {
     toast({ title: "Antrian ditambahkan", description: `${newName} berhasil masuk antrian` });
   };
 
-  const filtered = filter === "all" ? queue : queue.filter((q) => q.status === filter);
+  const filtered = queue
+    .filter((q) => filter === "all" || q.status === filter)
+    .filter((q) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        (q.queueNumber || "").toLowerCase().includes(query) ||
+        q.name.toLowerCase().includes(query) ||
+        q.plate.toLowerCase().includes(query) ||
+        q.phone.toLowerCase().includes(query)
+      );
+    });
 
   return (
     <div className="page-container">
@@ -161,6 +173,18 @@ const QueuePage = () => {
         </Dialog>
       </motion.div>
 
+      {/* Search */}
+      <div className="relative mb-3">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Cari nomor antrian, nama, plat..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 text-sm rounded-xl"
+        />
+      </div>
+
+      {/* Filter tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {[
           { key: "all", label: "Semua" },
