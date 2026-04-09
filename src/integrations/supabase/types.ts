@@ -259,6 +259,7 @@ export type Database = {
           date: string | null
           id: string
           method: string | null
+          queue_number: string | null
           service: string
           status: string
           user_id: string
@@ -270,6 +271,7 @@ export type Database = {
           date?: string | null
           id?: string
           method?: string | null
+          queue_number?: string | null
           service: string
           status?: string
           user_id: string
@@ -281,6 +283,7 @@ export type Database = {
           date?: string | null
           id?: string
           method?: string | null
+          queue_number?: string | null
           service?: string
           status?: string
           user_id?: string
