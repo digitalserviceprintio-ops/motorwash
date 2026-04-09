@@ -33,18 +33,28 @@ const QueuePage = () => {
 
   const loadQueue = async () => {
     if (!user) return;
-    const { data } = await db.from("queues").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    const { data } = await db.from("queues").select("*").eq("user_id", user.id).order("created_at", { ascending: true });
     if (data) {
-      setQueue(data.map((q: any) => ({
-        id: q.id,
-        name: q.name,
-        phone: q.phone || "",
-        plate: q.plate || "",
-        service: q.service,
-        status: q.status as QueueItem["status"],
-        estimatedTime: q.estimated_time || "20 menit",
-        createdAt: new Date(q.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
-      })));
+      // Group by date and assign queue numbers
+      const dateCounters: Record<string, number> = {};
+      const mapped = data.map((q: any) => {
+        const dateKey = q.created_at?.split("T")[0] || "";
+        dateCounters[dateKey] = (dateCounters[dateKey] || 0) + 1;
+        const queueNum = `A${String(dateCounters[dateKey]).padStart(3, "0")}`;
+        return {
+          id: q.id,
+          queueNumber: queueNum,
+          name: q.name,
+          phone: q.phone || "",
+          plate: q.plate || "",
+          service: q.service,
+          status: q.status as QueueItem["status"],
+          estimatedTime: q.estimated_time || "20 menit",
+          createdAt: new Date(q.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+        };
+      });
+      // Reverse to show newest first
+      setQueue(mapped.reverse());
     }
   };
 

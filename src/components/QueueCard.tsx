@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Clock, Phone, User, Bike } from "lucide-react";
+import { Clock, Phone, User, Bike, Hash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface QueueItem {
   id: string;
+  queueNumber?: string;
   name: string;
   phone: string;
   plate: string;
@@ -45,6 +46,11 @@ const QueueCard = ({ item, onStatusChange, index }: QueueCardProps) => {
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
+            {item.queueNumber && (
+              <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md">
+                {item.queueNumber}
+              </span>
+            )}
             <User className="w-4 h-4 text-muted-foreground" />
             <span className="font-semibold text-sm text-foreground">{item.name}</span>
           </div>
