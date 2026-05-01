@@ -26,7 +26,17 @@ const QueuePage = () => {
   const [newPlate, setNewPlate] = useState("");
   const [newService, setNewService] = useState("");
   const [newQueueNumber, setNewQueueNumber] = useState("");
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketData, setTicketData] = useState<QueueTicketData | null>(null);
+  const [business, setBusiness] = useState<{ name?: string; address?: string }>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) ensureBusinessSettings(user.id).then((d: any) => {
+      if (d) setBusiness({ name: d.business_name, address: d.address });
+    });
+  }, [user]);
+
 
   const generateQueueNumber = async () => {
     if (!user) return;
