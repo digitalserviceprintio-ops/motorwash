@@ -361,6 +361,97 @@ const PrinterSettingsPage = () => {
           </div>
         </div>
 
+        {/* Ticket Format Settings */}
+        <div className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Ticket className="w-4 h-4 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Format Tiket Antrian</p>
+          </div>
+
+          {/* Logo */}
+          <div className="mb-3">
+            <Label className="text-xs">Logo Usaha</Label>
+            <div className="flex items-center gap-3 mt-1">
+              {ticketLogoUrl ? (
+                <div className="relative">
+                  <img src={ticketLogoUrl} alt="Logo" className="w-14 h-14 rounded-xl object-cover border border-border/50" />
+                  <button
+                    onClick={() => setTicketLogoUrl("")}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                    title="Hapus logo"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center border border-dashed border-border">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
+              <label className="flex-1">
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                <span className="block text-center text-xs font-semibold bg-card border border-border/50 text-foreground py-2.5 rounded-xl cursor-pointer hover:bg-accent/50">
+                  {uploadingLogo ? "Mengunggah..." : ticketLogoUrl ? "Ganti Logo" : "Unggah Logo"}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="mb-3">
+            <Label className="text-xs">Judul Tiket</Label>
+            <Input value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)} placeholder="TIKET ANTRIAN" />
+          </div>
+
+          {/* Footer */}
+          <div className="mb-3">
+            <Label className="text-xs">Pesan Bawah Tiket</Label>
+            <Input value={ticketFooter} onChange={(e) => setTicketFooter(e.target.value)} placeholder="Mohon menunggu giliran Anda" />
+          </div>
+
+          {/* Font Size */}
+          <div className="mb-3">
+            <Label className="text-xs">Ukuran Font</Label>
+            <div className="flex gap-2 mt-1">
+              {(["small", "medium", "large"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setTicketFontSize(s)}
+                  className={`flex-1 text-xs font-medium py-2 rounded-xl transition-colors capitalize ${
+                    ticketFontSize === s ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground border border-border/50"
+                  }`}
+                >
+                  {s === "small" ? "Kecil" : s === "medium" ? "Sedang" : "Besar"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Tampilkan Alamat</span>
+              <button onClick={() => setTicketShowAddress((v) => !v)} className={`w-10 h-5 rounded-full relative transition-colors ${ticketShowAddress ? "bg-primary" : "bg-muted"}`}>
+                <div className={`w-4 h-4 rounded-full bg-white shadow absolute top-0.5 transition-transform ${ticketShowAddress ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Tampilkan No. HP Pelanggan</span>
+              <button onClick={() => setTicketShowPhone((v) => !v)} className={`w-10 h-5 rounded-full relative transition-colors ${ticketShowPhone ? "bg-primary" : "bg-muted"}`}>
+                <div className={`w-4 h-4 rounded-full bg-white shadow absolute top-0.5 transition-transform ${ticketShowPhone ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveTicket}
+            disabled={savingTicket}
+            className="w-full bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm"
+          >
+            {savingTicket ? "Menyimpan..." : "Simpan Pengaturan Tiket"}
+          </button>
+        </div>
+
         {/* Test Print Buttons */}
         <div className="space-y-2">
           <button onClick={handleTestPrint} disabled={testPrinting}
