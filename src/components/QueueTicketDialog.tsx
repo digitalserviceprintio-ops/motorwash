@@ -81,9 +81,9 @@ const QueueTicketDialog = ({ open, onOpenChange, data }: Props) => {
           "\x1B\x40",
           "\x1B\x61\x01", // center
           `${data.businessName || "CuciKu Motor Wash"}\n`,
-          `${data.address || ""}\n`,
+          ...(data.showAddress !== false && data.address ? [`${data.address}\n`] : []),
           "================================\n",
-          "TIKET ANTRIAN\n",
+          `${data.title || "TIKET ANTRIAN"}\n`,
           "\x1B\x21\x30", // double size
           `${data.queueNumber}\n`,
           "\x1B\x21\x00", // normal
@@ -91,12 +91,13 @@ const QueueTicketDialog = ({ open, onOpenChange, data }: Props) => {
           "\x1B\x61\x00", // left
           `Nama    : ${data.name}\n`,
           `Plat    : ${data.plate}\n`,
+          ...(data.showPhone && data.phone ? [`HP      : ${data.phone}\n`] : []),
           `Layanan : ${data.service}\n`,
           `Masuk   : ${data.createdAt}\n`,
           ...(data.estimatedTime ? [`Estimasi: ${data.estimatedTime}\n`] : []),
           "--------------------------------\n",
           "\x1B\x61\x01",
-          "Mohon menunggu giliran Anda\n",
+          `${data.footer || "Mohon menunggu giliran Anda"}\n`,
           "Terima kasih!\n",
           "\n\n\n\x1D\x56\x00",
         ];
