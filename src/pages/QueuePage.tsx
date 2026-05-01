@@ -28,15 +28,25 @@ const QueuePage = () => {
   const [newQueueNumber, setNewQueueNumber] = useState("");
   const [ticketOpen, setTicketOpen] = useState(false);
   const [ticketData, setTicketData] = useState<QueueTicketData | null>(null);
-  const [business, setBusiness] = useState<{ name?: string; address?: string }>({});
+  const [business, setBusiness] = useState<any>({});
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) ensureBusinessSettings(user.id).then((d: any) => {
-      if (d) setBusiness({ name: d.business_name, address: d.address });
+      if (d) setBusiness(d);
     });
   }, [user]);
 
+  const ticketFormat = () => ({
+    businessName: business.business_name,
+    address: business.address,
+    title: business.ticket_title || "TIKET ANTRIAN",
+    logoUrl: business.ticket_logo_url || "",
+    footer: business.ticket_footer || "Mohon menunggu giliran Anda",
+    fontSize: (business.ticket_font_size as "small" | "medium" | "large") || "medium",
+    showAddress: business.ticket_show_address ?? true,
+    showPhone: business.ticket_show_phone ?? false,
+  });
 
   const generateQueueNumber = async () => {
     if (!user) return;
