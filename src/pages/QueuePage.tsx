@@ -23,7 +23,24 @@ const QueuePage = () => {
   const [newPhone, setNewPhone] = useState("");
   const [newPlate, setNewPlate] = useState("");
   const [newService, setNewService] = useState("");
+  const [newQueueNumber, setNewQueueNumber] = useState("");
   const { toast } = useToast();
+
+  const generateQueueNumber = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().split("T")[0];
+    const { count } = await db
+      .from("queues")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", today);
+    const num = (count || 0) + 1;
+    setNewQueueNumber(`A${String(num).padStart(3, "0")}`);
+  };
+
+  useEffect(() => {
+    if (dialogOpen && user) generateQueueNumber();
+  }, [dialogOpen, user]);
 
   useEffect(() => {
     if (user) {
