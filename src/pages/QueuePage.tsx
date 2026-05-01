@@ -38,9 +38,12 @@ const QueuePage = () => {
     setNewQueueNumber(`A${String(num).padStart(3, "0")}`);
   };
 
-  useEffect(() => {
-    if (dialogOpen && user) generateQueueNumber();
-  }, [dialogOpen, user]);
+  const handleDialogChange = async (open: boolean) => {
+    setDialogOpen(open);
+    if (open && user) {
+      await generateQueueNumber();
+    }
+  };
 
   useEffect(() => {
     if (user) {
