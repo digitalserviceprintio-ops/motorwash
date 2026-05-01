@@ -38,9 +38,12 @@ const QueuePage = () => {
     setNewQueueNumber(`A${String(num).padStart(3, "0")}`);
   };
 
-  useEffect(() => {
-    if (dialogOpen && user) generateQueueNumber();
-  }, [dialogOpen, user]);
+  const handleDialogChange = async (open: boolean) => {
+    setDialogOpen(open);
+    if (open && user) {
+      await generateQueueNumber();
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -145,7 +148,7 @@ const QueuePage = () => {
           <ListOrdered className="w-5 h-5 text-primary" />
           <h1 className="text-xl font-bold text-foreground">Antrian</h1>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <button className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 rounded-xl">
               <Plus className="w-4 h-4" /> Tambah
