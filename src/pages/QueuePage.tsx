@@ -125,6 +125,7 @@ const QueuePage = () => {
     if (data) {
       const newItem: QueueItem = {
         id: data.id,
+        queueNumber: newQueueNumber,
         name: data.name,
         phone: data.phone || "",
         plate: data.plate || "",
@@ -134,10 +135,39 @@ const QueuePage = () => {
         createdAt: new Date(data.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
       };
       setQueue((prev) => [newItem, ...prev]);
+      // Show ticket
+      setTicketData({
+        queueNumber: newQueueNumber,
+        name: data.name,
+        plate: data.plate || "",
+        phone: data.phone || "",
+        service: data.service,
+        createdAt: new Date(data.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+        date: new Date(data.created_at).toLocaleDateString("id-ID"),
+        estimatedTime: data.estimated_time || "20 menit",
+        businessName: business.name,
+        address: business.address,
+      });
+      setTicketOpen(true);
     }
     setNewName(""); setNewPhone(""); setNewPlate(""); setNewService(""); setNewQueueNumber("");
     setDialogOpen(false);
     toast({ title: "Antrian ditambahkan", description: `${newName} (${newQueueNumber}) berhasil masuk antrian` });
+  };
+
+  const showTicketFor = (item: QueueItem) => {
+    setTicketData({
+      queueNumber: item.queueNumber || "-",
+      name: item.name,
+      plate: item.plate,
+      phone: item.phone,
+      service: item.service,
+      createdAt: item.createdAt,
+      estimatedTime: item.estimatedTime,
+      businessName: business.name,
+      address: business.address,
+    });
+    setTicketOpen(true);
   };
 
   const filtered = queue
