@@ -155,8 +155,7 @@ const QueuePage = () => {
         createdAt: new Date(data.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
         date: new Date(data.created_at).toLocaleDateString("id-ID"),
         estimatedTime: data.estimated_time || "20 menit",
-        businessName: business.name,
-        address: business.address,
+        ...ticketFormat(),
       });
       setTicketOpen(true);
     }
@@ -174,8 +173,7 @@ const QueuePage = () => {
       service: item.service,
       createdAt: item.createdAt,
       estimatedTime: item.estimatedTime,
-      businessName: business.name,
-      address: business.address,
+      ...ticketFormat(),
     });
     setTicketOpen(true);
   };
