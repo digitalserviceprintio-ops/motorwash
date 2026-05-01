@@ -138,6 +138,13 @@ const QueueTicketDialog = ({ open, onOpenChange, data }: Props) => {
     w.document.close();
   };
 
+  const fontSizeMap = {
+    small: { body: "text-[11px]", qnum: "text-4xl", title: "text-xs" },
+    medium: { body: "text-xs", qnum: "text-5xl", title: "text-sm" },
+    large: { body: "text-sm", qnum: "text-6xl", title: "text-base" },
+  } as const;
+  const fs = fontSizeMap[data.fontSize || "medium"];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xs mx-4">
@@ -146,28 +153,34 @@ const QueueTicketDialog = ({ open, onOpenChange, data }: Props) => {
             <Printer className="w-4 h-4" /> Tiket Antrian
           </DialogTitle>
         </DialogHeader>
-        <div ref={ticketRef} className="bg-card rounded-xl p-4 border border-border/50 font-mono text-xs">
+        <div ref={ticketRef} className={`bg-card rounded-xl p-4 border border-border/50 font-mono ${fs.body}`}>
           <div className="center text-center mb-2">
             <div className="flex justify-center mb-1">
-              <Droplets className="w-6 h-6 text-primary" />
+              {data.logoUrl ? (
+                <img src={data.logoUrl} alt="Logo" className="w-12 h-12 object-contain" crossOrigin="anonymous" />
+              ) : (
+                <Droplets className="w-6 h-6 text-primary" />
+              )}
             </div>
-            <h2 className="font-bold text-sm">{data.businessName || "CuciKu Motor Wash"}</h2>
-            {data.address && <p className="text-muted-foreground">{data.address}</p>}
+            <h2 className={`font-bold ${fs.title}`}>{data.businessName || "CuciKu Motor Wash"}</h2>
+            {data.showAddress !== false && data.address && (
+              <p className="text-muted-foreground">{data.address}</p>
+            )}
           </div>
           <div className="divider border-t border-dashed border-border my-2" />
-          <p className="text-center text-[11px] text-muted-foreground">NOMOR ANTRIAN</p>
-          <p className="qnum text-center text-5xl font-extrabold text-primary tracking-widest my-2">
+          <p className="text-center text-[11px] text-muted-foreground tracking-wider">{data.title || "TIKET ANTRIAN"}</p>
+          <p className={`qnum text-center font-extrabold text-primary tracking-widest my-2 ${fs.qnum}`}>
             {data.queueNumber}
           </p>
           <div className="divider border-t border-dashed border-border my-2" />
           <div className="row flex justify-between"><span>Nama</span><span className="font-semibold">{data.name}</span></div>
           <div className="row flex justify-between"><span>Plat Motor</span><span className="font-semibold">{data.plate || "-"}</span></div>
-          {data.phone && <div className="row flex justify-between"><span>No. HP</span><span>{data.phone}</span></div>}
+          {data.showPhone && data.phone && <div className="row flex justify-between"><span>No. HP</span><span>{data.phone}</span></div>}
           <div className="row flex justify-between"><span>Layanan</span><span>{data.service}</span></div>
           <div className="row flex justify-between"><span>Waktu Masuk</span><span>{data.createdAt}</span></div>
           {data.estimatedTime && <div className="row flex justify-between"><span>Estimasi</span><span>{data.estimatedTime}</span></div>}
           <div className="divider border-t border-dashed border-border my-2" />
-          <p className="text-center text-muted-foreground">Mohon menunggu giliran Anda</p>
+          <p className="text-center text-muted-foreground">{data.footer || "Mohon menunggu giliran Anda"}</p>
           <p className="text-center text-muted-foreground">Terima kasih 🙏</p>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-2">
