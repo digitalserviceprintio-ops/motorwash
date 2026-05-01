@@ -274,7 +274,7 @@ const QueuePage = () => {
 
       <div className="space-y-3">
         {filtered.map((item, i) => (
-          <QueueCard key={item.id} item={item} onStatusChange={handleStatusChange} index={i} />
+          <QueueCard key={item.id} item={item} onStatusChange={handleStatusChange} onShowTicket={showTicketFor} index={i} />
         ))}
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
@@ -282,6 +282,8 @@ const QueuePage = () => {
           </div>
         )}
       </div>
+
+      <QueueTicketDialog open={ticketOpen} onOpenChange={setTicketOpen} data={ticketData} />
     </div>
   );
 };
