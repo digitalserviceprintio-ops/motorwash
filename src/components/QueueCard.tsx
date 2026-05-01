@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, Phone, User, Bike, Hash } from "lucide-react";
+import { Clock, Phone, User, Bike, Ticket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface QueueItem {
