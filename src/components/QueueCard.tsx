@@ -33,7 +33,7 @@ const nextStatus: Record<string, QueueItem["status"]> = {
   processing: "done",
 };
 
-const QueueCard = ({ item, onStatusChange, index }: QueueCardProps) => {
+const QueueCard = ({ item, onStatusChange, onShowTicket, index }: QueueCardProps) => {
   const config = statusConfig[item.status];
   const canAdvance = item.status === "waiting" || item.status === "processing";
 
