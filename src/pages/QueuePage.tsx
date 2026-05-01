@@ -23,7 +23,24 @@ const QueuePage = () => {
   const [newPhone, setNewPhone] = useState("");
   const [newPlate, setNewPlate] = useState("");
   const [newService, setNewService] = useState("");
+  const [newQueueNumber, setNewQueueNumber] = useState("");
   const { toast } = useToast();
+
+  const generateQueueNumber = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().split("T")[0];
+    const { count } = await db
+      .from("queues")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", today);
+    const num = (count || 0) + 1;
+    setNewQueueNumber(`A${String(num).padStart(3, "0")}`);
+  };
+
+  useEffect(() => {
+    if (dialogOpen && user) generateQueueNumber();
+  }, [dialogOpen, user]);
 
   useEffect(() => {
     if (user) {
@@ -103,9 +120,9 @@ const QueuePage = () => {
       };
       setQueue((prev) => [newItem, ...prev]);
     }
-    setNewName(""); setNewPhone(""); setNewPlate(""); setNewService("");
+    setNewName(""); setNewPhone(""); setNewPlate(""); setNewService(""); setNewQueueNumber("");
     setDialogOpen(false);
-    toast({ title: "Antrian ditambahkan", description: `${newName} berhasil masuk antrian` });
+    toast({ title: "Antrian ditambahkan", description: `${newName} (${newQueueNumber}) berhasil masuk antrian` });
   };
 
   const filtered = queue
@@ -139,6 +156,10 @@ const QueuePage = () => {
               <DialogTitle>Tambah Antrian Baru</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 mt-2">
+              <div className="bg-primary/10 rounded-xl p-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Nomor Antrian</span>
+                <span className="text-lg font-bold text-primary">{newQueueNumber || "..."}</span>
+              </div>
               <div>
                 <Label className="text-xs">Nama Pelanggan</Label>
                 <Input placeholder="Masukkan nama" value={newName} onChange={(e) => setNewName(e.target.value)} />
