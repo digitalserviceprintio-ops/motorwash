@@ -22,6 +22,7 @@ interface PrinterDevice {
 const PrinterSettingsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [scanning, setScanning] = useState(false);
   const [printers, setPrinters] = useState<PrinterDevice[]>([]);
   const [connectedPrinter, setConnectedPrinter] = useState<string | null>(
@@ -31,6 +32,72 @@ const PrinterSettingsPage = () => {
   const [autoPrint, setAutoPrint] = useState(localStorage.getItem("cuciku_auto_print") === "true");
   const [btSupported] = useState(() => typeof navigator !== "undefined" && "bluetooth" in (navigator as any));
   const [testPrinting, setTestPrinting] = useState(false);
+
+  // Ticket format settings
+  const [ticketTitle, setTicketTitle] = useState("TIKET ANTRIAN");
+  const [ticketLogoUrl, setTicketLogoUrl] = useState<string>("");
+  const [ticketFooter, setTicketFooter] = useState("Mohon menunggu giliran Anda");
+  const [ticketFontSize, setTicketFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [ticketShowAddress, setTicketShowAddress] = useState(true);
+  const [ticketShowPhone, setTicketShowPhone] = useState(false);
+  const [savingTicket, setSavingTicket] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  useEffect(() => {
+    if (user) loadTicketSettings();
+  }, [user]);
+
+  const loadTicketSettings = async () => {
+    if (!user) return;
+    const settings = await ensureBusinessSettings(user.id);
+    if (settings) {
+      setTicketTitle(settings.ticket_title || "TIKET ANTRIAN");
+      setTicketLogoUrl(settings.ticket_logo_url || "");
+      setTicketFooter(settings.ticket_footer || "Mohon menunggu giliran Anda");
+      setTicketFontSize((settings.ticket_font_size as any) || "medium");
+      setTicketShowAddress(settings.ticket_show_address ?? true);
+      setTicketShowPhone(settings.ticket_show_phone ?? false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `ticket-logos/${user.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("aplikasistem").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("aplikasistem").getPublicUrl(path);
+      setTicketLogoUrl(pub.publicUrl);
+      toast({ title: "Logo terunggah" });
+    } catch (err: any) {
+      toast({ title: "Gagal unggah logo", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleSaveTicket = async () => {
+    if (!user) return;
+    setSavingTicket(true);
+    const { error } = await db.from("business_settings").update({
+      ticket_title: ticketTitle,
+      ticket_logo_url: ticketLogoUrl || null,
+      ticket_footer: ticketFooter,
+      ticket_font_size: ticketFontSize,
+      ticket_show_address: ticketShowAddress,
+      ticket_show_phone: ticketShowPhone,
+    }).eq("user_id", user.id);
+    setSavingTicket(false);
+    if (error) {
+      toast({ title: "Gagal simpan", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Pengaturan tiket disimpan" });
+  };
+
 
   const handleBluetoothScan = async () => {
     if (!btSupported) {
