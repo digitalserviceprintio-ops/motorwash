@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone, FileText } from "lucide-react";
+import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone, FileText, Ticket, Upload, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { ensureBusinessSettings } from "@/lib/supabase-helpers";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+const db = supabase as any;
 
 interface PrinterDevice {
   id: string;
@@ -15,6 +22,7 @@ interface PrinterDevice {
 const PrinterSettingsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [scanning, setScanning] = useState(false);
   const [printers, setPrinters] = useState<PrinterDevice[]>([]);
   const [connectedPrinter, setConnectedPrinter] = useState<string | null>(
@@ -24,6 +32,72 @@ const PrinterSettingsPage = () => {
   const [autoPrint, setAutoPrint] = useState(localStorage.getItem("cuciku_auto_print") === "true");
   const [btSupported] = useState(() => typeof navigator !== "undefined" && "bluetooth" in (navigator as any));
   const [testPrinting, setTestPrinting] = useState(false);
+
+  // Ticket format settings
+  const [ticketTitle, setTicketTitle] = useState("TIKET ANTRIAN");
+  const [ticketLogoUrl, setTicketLogoUrl] = useState<string>("");
+  const [ticketFooter, setTicketFooter] = useState("Mohon menunggu giliran Anda");
+  const [ticketFontSize, setTicketFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [ticketShowAddress, setTicketShowAddress] = useState(true);
+  const [ticketShowPhone, setTicketShowPhone] = useState(false);
+  const [savingTicket, setSavingTicket] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  useEffect(() => {
+    if (user) loadTicketSettings();
+  }, [user]);
+
+  const loadTicketSettings = async () => {
+    if (!user) return;
+    const settings = await ensureBusinessSettings(user.id);
+    if (settings) {
+      setTicketTitle(settings.ticket_title || "TIKET ANTRIAN");
+      setTicketLogoUrl(settings.ticket_logo_url || "");
+      setTicketFooter(settings.ticket_footer || "Mohon menunggu giliran Anda");
+      setTicketFontSize((settings.ticket_font_size as any) || "medium");
+      setTicketShowAddress(settings.ticket_show_address ?? true);
+      setTicketShowPhone(settings.ticket_show_phone ?? false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `ticket-logos/${user.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("aplikasistem").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("aplikasistem").getPublicUrl(path);
+      setTicketLogoUrl(pub.publicUrl);
+      toast({ title: "Logo terunggah" });
+    } catch (err: any) {
+      toast({ title: "Gagal unggah logo", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleSaveTicket = async () => {
+    if (!user) return;
+    setSavingTicket(true);
+    const { error } = await db.from("business_settings").update({
+      ticket_title: ticketTitle,
+      ticket_logo_url: ticketLogoUrl || null,
+      ticket_footer: ticketFooter,
+      ticket_font_size: ticketFontSize,
+      ticket_show_address: ticketShowAddress,
+      ticket_show_phone: ticketShowPhone,
+    }).eq("user_id", user.id);
+    setSavingTicket(false);
+    if (error) {
+      toast({ title: "Gagal simpan", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Pengaturan tiket disimpan" });
+  };
+
 
   const handleBluetoothScan = async () => {
     if (!btSupported) {
@@ -285,6 +359,97 @@ const PrinterSettingsPage = () => {
               <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${autoPrint ? "translate-x-5" : "translate-x-0.5"}`} />
             </button>
           </div>
+        </div>
+
+        {/* Ticket Format Settings */}
+        <div className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Ticket className="w-4 h-4 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Format Tiket Antrian</p>
+          </div>
+
+          {/* Logo */}
+          <div className="mb-3">
+            <Label className="text-xs">Logo Usaha</Label>
+            <div className="flex items-center gap-3 mt-1">
+              {ticketLogoUrl ? (
+                <div className="relative">
+                  <img src={ticketLogoUrl} alt="Logo" className="w-14 h-14 rounded-xl object-cover border border-border/50" />
+                  <button
+                    onClick={() => setTicketLogoUrl("")}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                    title="Hapus logo"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center border border-dashed border-border">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
+              <label className="flex-1">
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                <span className="block text-center text-xs font-semibold bg-card border border-border/50 text-foreground py-2.5 rounded-xl cursor-pointer hover:bg-accent/50">
+                  {uploadingLogo ? "Mengunggah..." : ticketLogoUrl ? "Ganti Logo" : "Unggah Logo"}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="mb-3">
+            <Label className="text-xs">Judul Tiket</Label>
+            <Input value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)} placeholder="TIKET ANTRIAN" />
+          </div>
+
+          {/* Footer */}
+          <div className="mb-3">
+            <Label className="text-xs">Pesan Bawah Tiket</Label>
+            <Input value={ticketFooter} onChange={(e) => setTicketFooter(e.target.value)} placeholder="Mohon menunggu giliran Anda" />
+          </div>
+
+          {/* Font Size */}
+          <div className="mb-3">
+            <Label className="text-xs">Ukuran Font</Label>
+            <div className="flex gap-2 mt-1">
+              {(["small", "medium", "large"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setTicketFontSize(s)}
+                  className={`flex-1 text-xs font-medium py-2 rounded-xl transition-colors capitalize ${
+                    ticketFontSize === s ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground border border-border/50"
+                  }`}
+                >
+                  {s === "small" ? "Kecil" : s === "medium" ? "Sedang" : "Besar"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Tampilkan Alamat</span>
+              <button onClick={() => setTicketShowAddress((v) => !v)} className={`w-10 h-5 rounded-full relative transition-colors ${ticketShowAddress ? "bg-primary" : "bg-muted"}`}>
+                <div className={`w-4 h-4 rounded-full bg-white shadow absolute top-0.5 transition-transform ${ticketShowAddress ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Tampilkan No. HP Pelanggan</span>
+              <button onClick={() => setTicketShowPhone((v) => !v)} className={`w-10 h-5 rounded-full relative transition-colors ${ticketShowPhone ? "bg-primary" : "bg-muted"}`}>
+                <div className={`w-4 h-4 rounded-full bg-white shadow absolute top-0.5 transition-transform ${ticketShowPhone ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveTicket}
+            disabled={savingTicket}
+            className="w-full bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm"
+          >
+            {savingTicket ? "Menyimpan..." : "Simpan Pengaturan Tiket"}
+          </button>
         </div>
 
         {/* Test Print Buttons */}
