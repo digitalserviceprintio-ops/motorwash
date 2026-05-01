@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone, FileText } from "lucide-react";
+import { Printer, Bluetooth, Wifi, Usb, ChevronLeft, Check, RefreshCw, Smartphone, FileText, Ticket, Upload, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { ensureBusinessSettings } from "@/lib/supabase-helpers";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+const db = supabase as any;
 
 interface PrinterDevice {
   id: string;
