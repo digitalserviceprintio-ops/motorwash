@@ -24,6 +24,7 @@ const statusConfig = {
 interface QueueCardProps {
   item: QueueItem;
   onStatusChange: (id: string, status: QueueItem["status"]) => void;
+  onShowTicket?: (item: QueueItem) => void;
   index: number;
 }
 
