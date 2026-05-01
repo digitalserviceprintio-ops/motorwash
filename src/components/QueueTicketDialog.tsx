@@ -15,6 +15,13 @@ export interface QueueTicketData {
   businessName?: string;
   address?: string;
   estimatedTime?: string;
+  // Ticket format settings
+  title?: string;
+  logoUrl?: string;
+  footer?: string;
+  fontSize?: "small" | "medium" | "large";
+  showAddress?: boolean;
+  showPhone?: boolean;
 }
 
 interface Props {
