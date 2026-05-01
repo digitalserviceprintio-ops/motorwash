@@ -120,9 +120,9 @@ const QueuePage = () => {
       };
       setQueue((prev) => [newItem, ...prev]);
     }
-    setNewName(""); setNewPhone(""); setNewPlate(""); setNewService("");
+    setNewName(""); setNewPhone(""); setNewPlate(""); setNewService(""); setNewQueueNumber("");
     setDialogOpen(false);
-    toast({ title: "Antrian ditambahkan", description: `${newName} berhasil masuk antrian` });
+    toast({ title: "Antrian ditambahkan", description: `${newName} (${newQueueNumber}) berhasil masuk antrian` });
   };
 
   const filtered = queue
