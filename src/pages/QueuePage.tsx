@@ -156,6 +156,10 @@ const QueuePage = () => {
               <DialogTitle>Tambah Antrian Baru</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 mt-2">
+              <div className="bg-primary/10 rounded-xl p-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Nomor Antrian</span>
+                <span className="text-lg font-bold text-primary">{newQueueNumber || "..."}</span>
+              </div>
               <div>
                 <Label className="text-xs">Nama Pelanggan</Label>
                 <Input placeholder="Masukkan nama" value={newName} onChange={(e) => setNewName(e.target.value)} />
