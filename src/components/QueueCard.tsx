@@ -79,14 +79,25 @@ const QueueCard = ({ item, onStatusChange, onShowTicket, index }: QueueCardProps
             Est. {item.estimatedTime}
           </p>
         </div>
-        {canAdvance && (
-          <button
-            onClick={() => onStatusChange(item.id, nextStatus[item.status])}
-            className="text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
-          >
-            {item.status === "waiting" ? "Mulai" : "Selesai"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {onShowTicket && (
+            <button
+              onClick={() => onShowTicket(item)}
+              className="text-xs font-semibold bg-card border border-border text-foreground px-3 py-2 rounded-xl hover:bg-accent/50 transition-colors flex items-center gap-1"
+              title="Tiket Antrian"
+            >
+              <Ticket className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {canAdvance && (
+            <button
+              onClick={() => onStatusChange(item.id, nextStatus[item.status])}
+              className="text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              {item.status === "waiting" ? "Mulai" : "Selesai"}
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
