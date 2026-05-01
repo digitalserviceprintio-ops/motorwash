@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, Phone, User, Bike, Hash } from "lucide-react";
+import { Clock, Phone, User, Bike, Ticket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface QueueItem {
@@ -24,6 +24,7 @@ const statusConfig = {
 interface QueueCardProps {
   item: QueueItem;
   onStatusChange: (id: string, status: QueueItem["status"]) => void;
+  onShowTicket?: (item: QueueItem) => void;
   index: number;
 }
 
@@ -32,7 +33,7 @@ const nextStatus: Record<string, QueueItem["status"]> = {
   processing: "done",
 };
 
-const QueueCard = ({ item, onStatusChange, index }: QueueCardProps) => {
+const QueueCard = ({ item, onStatusChange, onShowTicket, index }: QueueCardProps) => {
   const config = statusConfig[item.status];
   const canAdvance = item.status === "waiting" || item.status === "processing";
 
@@ -78,14 +79,25 @@ const QueueCard = ({ item, onStatusChange, index }: QueueCardProps) => {
             Est. {item.estimatedTime}
           </p>
         </div>
-        {canAdvance && (
-          <button
-            onClick={() => onStatusChange(item.id, nextStatus[item.status])}
-            className="text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
-          >
-            {item.status === "waiting" ? "Mulai" : "Selesai"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {onShowTicket && (
+            <button
+              onClick={() => onShowTicket(item)}
+              className="text-xs font-semibold bg-card border border-border text-foreground px-3 py-2 rounded-xl hover:bg-accent/50 transition-colors flex items-center gap-1"
+              title="Tiket Antrian"
+            >
+              <Ticket className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {canAdvance && (
+            <button
+              onClick={() => onStatusChange(item.id, nextStatus[item.status])}
+              className="text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              {item.status === "waiting" ? "Mulai" : "Selesai"}
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );

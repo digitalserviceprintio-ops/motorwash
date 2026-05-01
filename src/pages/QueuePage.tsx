@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ListOrdered, Plus, Search } from "lucide-react";
 import QueueCard, { QueueItem } from "@/components/QueueCard";
+import QueueTicketDialog, { QueueTicketData } from "@/components/QueueTicketDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { ensureBusinessSettings } from "@/lib/supabase-helpers";
 
 const db = supabase as any;
 
@@ -24,7 +26,17 @@ const QueuePage = () => {
   const [newPlate, setNewPlate] = useState("");
   const [newService, setNewService] = useState("");
   const [newQueueNumber, setNewQueueNumber] = useState("");
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketData, setTicketData] = useState<QueueTicketData | null>(null);
+  const [business, setBusiness] = useState<{ name?: string; address?: string }>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) ensureBusinessSettings(user.id).then((d: any) => {
+      if (d) setBusiness({ name: d.business_name, address: d.address });
+    });
+  }, [user]);
+
 
   const generateQueueNumber = async () => {
     if (!user) return;
@@ -113,6 +125,7 @@ const QueuePage = () => {
     if (data) {
       const newItem: QueueItem = {
         id: data.id,
+        queueNumber: newQueueNumber,
         name: data.name,
         phone: data.phone || "",
         plate: data.plate || "",
@@ -122,10 +135,39 @@ const QueuePage = () => {
         createdAt: new Date(data.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
       };
       setQueue((prev) => [newItem, ...prev]);
+      // Show ticket
+      setTicketData({
+        queueNumber: newQueueNumber,
+        name: data.name,
+        plate: data.plate || "",
+        phone: data.phone || "",
+        service: data.service,
+        createdAt: new Date(data.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+        date: new Date(data.created_at).toLocaleDateString("id-ID"),
+        estimatedTime: data.estimated_time || "20 menit",
+        businessName: business.name,
+        address: business.address,
+      });
+      setTicketOpen(true);
     }
     setNewName(""); setNewPhone(""); setNewPlate(""); setNewService(""); setNewQueueNumber("");
     setDialogOpen(false);
     toast({ title: "Antrian ditambahkan", description: `${newName} (${newQueueNumber}) berhasil masuk antrian` });
+  };
+
+  const showTicketFor = (item: QueueItem) => {
+    setTicketData({
+      queueNumber: item.queueNumber || "-",
+      name: item.name,
+      plate: item.plate,
+      phone: item.phone,
+      service: item.service,
+      createdAt: item.createdAt,
+      estimatedTime: item.estimatedTime,
+      businessName: business.name,
+      address: business.address,
+    });
+    setTicketOpen(true);
   };
 
   const filtered = queue
@@ -232,7 +274,7 @@ const QueuePage = () => {
 
       <div className="space-y-3">
         {filtered.map((item, i) => (
-          <QueueCard key={item.id} item={item} onStatusChange={handleStatusChange} index={i} />
+          <QueueCard key={item.id} item={item} onStatusChange={handleStatusChange} onShowTicket={showTicketFor} index={i} />
         ))}
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
@@ -240,6 +282,8 @@ const QueuePage = () => {
           </div>
         )}
       </div>
+
+      <QueueTicketDialog open={ticketOpen} onOpenChange={setTicketOpen} data={ticketData} />
     </div>
   );
 };
